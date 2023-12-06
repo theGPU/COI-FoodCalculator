@@ -32,13 +32,41 @@ else
         }
     </CardDeck>
     <Heading Size="HeadingSize.Is2" Margin="Margin.Is3.FromBottom">Consumption multiplier:</Heading>
-    <Select TValue="string" @bind-SelectedValue="@ConsumptionMultiplier">
-        <SelectItem Value="60">-40%</SelectItem>
-        <SelectItem Value="80">-20%</SelectItem>
-        <SelectItem Value="100">Normal</SelectItem>
-        <SelectItem Value="120">+20%</SelectItem>
-        <SelectItem Value="140">+40%</SelectItem>
-    </Select>
+    <Addons>
+        <Addon AddonType="AddonType.Start"><AddonLabel>Settlement consumption</AddonLabel></Addon>
+        <Addon AddonType="AddonType.Body">
+            <Select TValue="string" @bind-SelectedValue="@BaseConsumptionMultiplier">
+                <SelectItem Value="60">40% reduced</SelectItem>
+                <SelectItem Value="80">20% reduced</SelectItem>
+                <SelectItem Value="100">Standard</SelectItem>
+                <SelectItem Value="120">20% increased</SelectItem>
+                <SelectItem Value="140">40% increased</SelectItem>
+            </Select>
+        </Addon>
+    </Addons>
+
+    <Addons>
+        <Addon AddonType="AddonType.Start"><AddonLabel>Food Saver edict</AddonLabel></Addon>
+        <Addon AddonType="AddonType.Body">
+            <Select TValue="string" @bind-SelectedValue="@FoodSaverEdictMultiplier">
+                <SelectItem Value="100">Off</SelectItem>
+                <SelectItem Value="80">Food Saver I (-20%)</SelectItem>
+                <SelectItem Value="70">Food Saver II (-30%)</SelectItem>
+            </Select>
+        </Addon>
+    </Addons>
+
+    <Addons>
+        <Addon AddonType="AddonType.Start"><AddonLabel>Plenty of Food edict</AddonLabel></Addon>
+        <Addon AddonType="AddonType.Body">
+            <Select TValue="string" @bind-SelectedValue="@PlentyOfFoodEdictMultiplier">
+                <SelectItem Value="100">Off</SelectItem>
+                <SelectItem Value="125">Plenty of Food I (+25%)</SelectItem>
+                <SelectItem Value="150">Plenty of Food II (+50%)</SelectItem>
+            </Select>
+        </Addon>
+    </Addons>
+    
 
     <Heading Size="HeadingSize.Is2" Margin="Margin.Is3.FromBottom">Total population:</Heading>
     <Addons>
@@ -68,7 +96,9 @@ else
 @code {
     FoodConfig? foodConfig { get; set; } = null;
     int Population { get; set; } = 1000;
-    string ConsumptionMultiplier { get; set; } = "100";
+    string BaseConsumptionMultiplier { get; set; } = "100";
+    string FoodSaverEdictMultiplier { get; set; } = "100";
+    string PlentyOfFoodEdictMultiplier { get; set; } = "100";
 
     protected override async Task OnInitializedAsync()
     {
@@ -100,5 +130,13 @@ else
     string CalculateFoodTypeDmand(string foodType) => !foodConfig!.TypesEnabled[foodType] ? "0" :
         ((Population / foodConfig!.TypeToConsume[foodType] /
         (foodConfig!.GroupToTypes.Where(x => x.Value.Any(y => foodConfig!.TypesEnabled[y])).Count() *
-        foodConfig!.GroupToTypes.First(x => x.Value.Contains(foodType)).Value.Where(x => foodConfig!.TypesEnabled[x]).Count())) * ((double)int.Parse(ConsumptionMultiplier) / 100)).ToString("#.##");
+        foodConfig!.GroupToTypes.First(x => x.Value.Contains(foodType)).Value.Where(x => foodConfig!.TypesEnabled[x]).Count())) * 
+        ((double)int.Parse(BaseConsumptionMultiplier) / 100) *
+        ((double)int.Parse(FoodSaverEdictMultiplier) / 100) *
+        ((double)int.Parse(PlentyOfFoodEdictMultiplier) / 100) *
+        (FoodSaverEdictMultiplier == "80" && PlentyOfFoodEdictMultiplier == "125" ? 1.05 : 1) *
+        (FoodSaverEdictMultiplier == "70" && PlentyOfFoodEdictMultiplier == "125" ? 1.09 : 1) *
+        (FoodSaverEdictMultiplier == "80" && PlentyOfFoodEdictMultiplier == "150" ? 1.084 : 1) *
+        (FoodSaverEdictMultiplier == "70" && PlentyOfFoodEdictMultiplier == "150" ? 1.14 : 1)
+        ).ToString("#.##");
 }
