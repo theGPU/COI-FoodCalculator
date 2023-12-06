@@ -132,11 +132,6 @@ else
         (foodConfig!.GroupToTypes.Where(x => x.Value.Any(y => foodConfig!.TypesEnabled[y])).Count() *
         foodConfig!.GroupToTypes.First(x => x.Value.Contains(foodType)).Value.Where(x => foodConfig!.TypesEnabled[x]).Count())) * 
         ((double)int.Parse(BaseConsumptionMultiplier) / 100) *
-        ((double)int.Parse(FoodSaverEdictMultiplier) / 100) *
-        ((double)int.Parse(PlentyOfFoodEdictMultiplier) / 100) *
-        (FoodSaverEdictMultiplier == "80" && PlentyOfFoodEdictMultiplier == "125" ? 1.05 : 1) *
-        (FoodSaverEdictMultiplier == "70" && PlentyOfFoodEdictMultiplier == "125" ? 1.09 : 1) *
-        (FoodSaverEdictMultiplier == "80" && PlentyOfFoodEdictMultiplier == "150" ? 1.084 : 1) *
-        (FoodSaverEdictMultiplier == "70" && PlentyOfFoodEdictMultiplier == "150" ? 1.14 : 1)
+        (((double)int.Parse(PlentyOfFoodEdictMultiplier) - (100 - (double)int.Parse(FoodSaverEdictMultiplier))) / 100)
         ).ToString("#.##");
 }
