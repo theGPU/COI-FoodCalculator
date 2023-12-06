@@ -1,0 +1,28 @@
+﻿@inherits LayoutComponentBase
+
+<Layout>
+    <Layout>
+        <LayoutHeader Fixed>
+            <Bar Breakpoint="Breakpoint.Desktop" Background="Background.Secondary" ThemeContrast="ThemeContrast.Light">
+                <BarBrand>
+                    <BarItem>
+                        <BarLink TextColor="TextColor.Primary" To="">
+                            COI Food Calculator
+                        </BarLink>
+                    </BarItem>
+                </BarBrand>
+                <BarToggler />
+                <BarMenu>
+                    <BarEnd>
+                        <BarItem>
+                            <BarLink To="https://github.com/">GitHub</BarLink>
+                        </BarItem>
+                    </BarEnd>
+                </BarMenu>
+            </Bar>
+        </LayoutHeader>
+        <LayoutContent Padding="Padding.Is4.OnX.Is4.FromTop">
+            @Body
+        </LayoutContent>
+    </Layout>
+</Layout>

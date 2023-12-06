@@ -1,0 +1,104 @@
+﻿@page "/"
+
+@inject HttpClient Http
+
+@if (foodConfig == null)
+{
+    <Paragraph>Loading...</Paragraph>
+}
+else
+{
+    <Heading Size="HeadingSize.Is2" Margin="Margin.Is3.FromBottom">Consumption settings:</Heading>
+    <CardDeck>
+        @foreach (var foodGroup in foodConfig.GroupToTypes)
+        {
+            <Card>
+                <CardBody>
+                    <CardTitle Size="5">@foodGroup.Key</CardTitle>
+                        @foreach (var foodType in foodGroup.Value)
+                    {
+                        <Addons>
+                            <Addon AddonType="AddonType.Start"><AddonLabel>@foodType</AddonLabel></Addon>
+                                <Addon AddonType="AddonType.Body">
+                                    <NumericPicker TValue="double?" Min="0" Value=GetFoodTypeConsume(foodType) Placeholder="1 per X workers /60" />
+                                </Addon>
+                                <Addon AddonType="AddonType.End">
+                                    <Check Size="Size.ExtraLarge" TValue="bool" Checked="@GetFoodTypeEnabled(foodType)" CheckedChanged="@((bool value) => OnFoodSelectionChanged(foodType, value))"></Check>
+                                </Addon>
+                            </Addons>
+                    }
+                </CardBody>
+            </Card>
+        }
+    </CardDeck>
+    <Heading Size="HeadingSize.Is2" Margin="Margin.Is3.FromBottom">Consumption multiplier:</Heading>
+    <Select TValue="string" @bind-SelectedValue="@ConsumptionMultiplier">
+        <SelectItem Value="60">-40%</SelectItem>
+        <SelectItem Value="80">-20%</SelectItem>
+        <SelectItem Value="100">Normal</SelectItem>
+        <SelectItem Value="120">+20%</SelectItem>
+        <SelectItem Value="140">+40%</SelectItem>
+    </Select>
+
+    <Heading Size="HeadingSize.Is2" Margin="Margin.Is3.FromBottom">Total population:</Heading>
+    <Addons>
+        <Addon AddonType="AddonType.Start"><AddonLabel>Population</AddonLabel></Addon>
+        <Addon AddonType="AddonType.Body"><NumericPicker TValue="int" Min="0" @bind-Value="@Population" /></Addon>
+    </Addons>
+    <Heading Size="HeadingSize.Is2" Margin="Margin.Is3.FromBottom">Demand:</Heading>
+    <CardDeck>
+        @foreach (var foodGroup in foodConfig.GroupToTypes)
+        {
+            <Card>
+                <CardBody>
+                    <CardTitle Size="5">@foodGroup.Key</CardTitle>
+                        @foreach (var foodType in foodGroup.Value)
+                    {
+                        <Addons>
+                            <Addon AddonType="AddonType.Start"><AddonLabel>@foodType</AddonLabel></Addon>
+                                <Addon AddonType="AddonType.Body"><AddonLabel Background="Background.Transparent">@CalculateFoodTypeDmand(foodType)</AddonLabel></Addon>
+                            </Addons>
+                    }
+                </CardBody>
+            </Card>
+        }
+    </CardDeck>
+}
+
+@code {
+    FoodConfig? foodConfig { get; set; } = null;
+    int Population { get; set; } = 1000;
+    string ConsumptionMultiplier { get; set; } = "100";
+
+    protected override async Task OnInitializedAsync()
+    {
+        foodConfig = await Http.GetFromJsonAsync<FoodConfig>("FoodTypes.json");
+        foodConfig?.Init();
+    }
+
+    class FoodConfig
+    {
+        public Dictionary<string, double> TypeToConsume { get; set; } = null!;
+        public Dictionary<string, List<string>> GroupToTypes { get; set; } = null!;
+        public Dictionary<string, bool> TypesEnabled { get; set; } = new Dictionary<string, bool>();
+
+        public void Init()
+        {
+            foreach (var type in TypeToConsume.Keys)
+                TypesEnabled.Add(type, true);
+        }
+    }
+
+    double GetFoodTypeConsume(string foodType) => foodConfig!.TypeToConsume[foodType];
+
+    bool GetFoodTypeEnabled(string foodType) => foodConfig!.TypesEnabled[foodType];
+    void OnFoodSelectionChanged(string foodType, bool value)
+    {
+        foodConfig!.TypesEnabled[foodType] = value;
+    }
+
+    string CalculateFoodTypeDmand(string foodType) => !foodConfig!.TypesEnabled[foodType] ? "0" :
+        ((Population / foodConfig!.TypeToConsume[foodType] /
+        (foodConfig!.GroupToTypes.Where(x => x.Value.Any(y => foodConfig!.TypesEnabled[y])).Count() *
+        foodConfig!.GroupToTypes.First(x => x.Value.Contains(foodType)).Value.Where(x => foodConfig!.TypesEnabled[x]).Count())) * ((double)int.Parse(ConsumptionMultiplier) / 100)).ToString("#.##");
+}
