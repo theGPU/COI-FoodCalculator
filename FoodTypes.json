@@ -1,0 +1,22 @@
+{
+  "TypeToConsume": {
+    "Potato": 21.3,
+    "Corn": 30.3,
+    "Bread": 45.4,
+    "Meat": 33.3,
+    "Eggs": 30.3,
+    "Tofu": 50.0,
+    "Sausage": 27.0,
+    "Vegetables": 21.3,
+    "Fruit": 28.6,
+    "Snack": 17.2,
+    "Cake": 35.7
+  },
+
+  "GroupToTypes": {
+    "Carbs": [ "Potato", "Corn", "Bread" ],
+    "Protein": [ "Meat", "Eggs", "Tofu", "Sausage" ],
+    "Vitamins": [ "Vegetables", "Fruit" ],
+    "Treats": [ "Snack", "Cake" ]
+  }
+}
